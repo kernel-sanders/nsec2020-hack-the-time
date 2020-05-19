@@ -504,7 +504,7 @@ First, we need to get the argument on the running challenge server. At this poin
 chat: http://time-server.ctf:8080/debug/pprof/etc/services doesn't 404
 ```
 
-He was using Ghidra, and when I posted the `mlaasdkfasldkfm` string in chat he search for it.
+He was using Ghidra, and when I posted the `mlaasdkfasldkfm` string in chat he searched for it.
 
 ![ghidra search](images/ghidra_search.png)
 
@@ -709,10 +709,8 @@ Legend: code, data, rodata, value
 
 Look at the string in `RCX`: `static/`. Thats where the static files must be loaded from. We know that script.js and styles.css exist since they are loaded when we browse to `/` on the challenge server, so if we overwrite either of those and browse to them, we should get our command output!
 
-At this point, my team and I tried many, many different Bash tricks to get command output locally. A breakthrough came when one teamate suggesting using `$*` to separate `$IFS` from the next string. This allowed us to create spaces. I was excited. We had a clear path to the flag, just need to locate it and `cat` it. I ran the following expantalty:
+At this point, my team and I tried many, many different Bash tricks to get command output locally. A breakthrough came when one teamate suggested using `$*` to separate `$IFS` from the next string. This allowed us to create spaces. I was excited. We had a clear path to the flag, just needed to locate and `cat` it. I ran the following expectantly:
 
-```
- 
 ```bash
 $ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a -X '&&cd$IFS$*static&&find$IFS..|tee$IFS$*styles.css' >/dev/null`
 $ curl time-server.ctf:8080/styles.css
