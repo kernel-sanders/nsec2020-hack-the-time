@@ -504,7 +504,7 @@ First, we need to get the argument on the running challenge server. At this poin
 chat: http://time-server.ctf:8080/debug/pprof/etc/services doesn't 404
 ```
 
-He was using Ghidra, and when I posted the `mlaasdkfasldkfm` string in chat he searched for it. (pprof)[https://github.com/google/pprof/blob/master/doc/README.md#web-interface-1] is a Go standard library tool for profiling.
+He was using Ghidra, and when I posted the `mlaasdkfasldkfm` string in chat he searched for it. [pprof](https://github.com/google/pprof/blob/master/doc/README.md#web-interface-1) is a Go standard library tool for profiling.
 
 ![ghidra search](images/ghidra_search.png)
 
